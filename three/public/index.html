@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Demo</title>
+    <link rel="stylesheet" href="asset/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/three@10.9.2/build/three.module.js"></script>
+
+</head>
+
+<body>
+    <div id="counter">0</div>
+
+    <div id="controlls">
+        <div>
+            <button id="forward">
+                <svg width="30" height="30" viewBox="0 0 10 10">
+                    <g transform="rotate(0, 5, 5)">
+                        <path d="M5,4 L7,6 L3,6 L5,4"></path>
+                    </g>
+                </svg>
+            </button>
+            <button id="left">
+                <svg width="30" height="30" viewBox="0 0 10 10">
+                    <g transform="rotate(-90, 5, 5)">
+                        <path d="M5,4 L7,6 L3,6 L5,4"></path>
+                    </g>
+                </svg>
+            </button>
+            <button id="backward">
+                <svg width="30" height="30" viewBox="0 0 10 10">
+                    <g transform="rotate(180, 5, 5)">
+                        <path d="M5,4 L7,6 L3,6 L5,4"></path>
+                    </g>
+                </svg>
+            </button>
+            <button id="right">
+                <svg width="30" height="30" viewBox="0 0 10 10">
+                    <g transform="rotate(90, 5, 5)">
+                        <path d="M5,4 L7,6 L3,6 L5,4"></path>
+                    </g>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div id="end"
+        style="visibility: hidden; position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+        <h1>Game Over</h1>
+        <button id="retry" style="padding: 10px 20px; font-size: 18px;">Retry</button>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.176.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/"
+            }
+        }
+    </script>
+</body>
+
+</html>
