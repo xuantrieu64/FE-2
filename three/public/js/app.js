@@ -2,6 +2,8 @@ import * as THREE from 'three';
 
 const counterDOM = document.getElementById('counter');
 const endDOM = document.getElementById('end');
+const container = document.getElementById('effect-container');
+const victorySound = document.getElementById('victory-sound');
 
 const scene = new THREE.Scene();
 const distance = 500;
@@ -598,9 +600,8 @@ function animate(timestamp) {
                     currentLane++;
                     counterDOM.innerHTML = currentLane;
 
-                    if (currentLane == 32) {
-                        const container = document.getElementById('effect-container');
-                        const victorySound = document.getElementById('victory-sound');
+                    if (currentLane >= 30) {
+
 
                         victorySound.currentTime = 0;
                         victorySound.play();
