@@ -1,7 +1,4 @@
-import * as THREE from '/node_modules/three/build/three.module.js';
-import { GLTFLoader } from 'https://unpkg.com/three@0.160.1/examples/jsm/loaders/GLTFLoader.js';
-// import { GLTFLoader } from '/node_modules/three/addons/loaders/GLTFLoader.js';
-// import { RpmAvatarLoader } from '@readyplayerme/three';
+import * as THREE from 'three';
 
 const counterDOM = document.getElementById('counter');
 const endDOM = document.getElementById('end');
@@ -34,6 +31,7 @@ const stepTime = 200;
 let lanes;
 let currentLane;
 let currentColumn;
+let isGameOver = false;
 
 let previousTimestamp;
 let startMoving;
@@ -100,44 +98,6 @@ const laneTypes = ['car', 'truck', 'forest'];
 const laneSpeeds = [2, 2.5, 3];
 const vechicleColors = [0xa52523, 0xbdb638, 0x78b14b];
 const threeHeights = [20, 45, 60];
-
-
-// Animation setup
-let mixer;
-let avatar;
-
-const loader = new GLTFLoader();
-
-// Load avatar
-loader.load(
-    'https://models.readyplayer.me/682356583c5ab94b9e4bf2f4.glb',
-    function (gltf) {
-        avatar = gltf.scene;
-        avatar.scale.set(1.5, 1.5, 1.5);
-        avatar.position.set(0, -1.5, 0);
-        scene.add(avatar);
-
-        mixer = new THREE.AnimationMixer(avatar);
-
-        // Sau khi avatar load xong, mới load animation
-        // loader.load(
-        //     'Walking.glb', // đường dẫn tới file animation bạn đã chuyển
-        //     function (animGltf) {
-        //         const clip = animGltf.animations[0];
-        //         const action = mixer.clipAction(clip);
-        //         action.play();
-        //     },
-        //     undefined,
-        //     function (err) {
-        //         console.error('Lỗi khi tải Walking.glb:', err);
-        //     }
-        // );
-    },
-    undefined,
-    function (error) {
-        console.error('Lỗi khi tải avatar:', error);
-    }
-);
 
 
 const initaliseValues = () => {
@@ -458,6 +418,19 @@ function Lane(index) {
         }
     }
 }
+function addGrassLaneForWin() {
+    const grassLane = {
+        type: 'grass',
+        occupiedPositions: new Set(),
+        mesh: Grass(),
+    };
+    lanes.push(grassLane);
+    scene.add(grassLane.mesh);
+
+    grassLane.mesh.position.y = (lanes.length - 1) * positionWidth * zoom;
+    grassLane.mesh.position.x = 0;
+    grassLane.mesh.rotation.x = 0; // Nếu bạn cần chỉnh lại góc, nhưng BoxGeometry đã nằm ngang mặc định
+}
 document.querySelector("#retry").addEventListener("click", () => {
     lanes.forEach(lane => scene.remove(lane.mesh));
     initaliseValues();
@@ -485,21 +458,39 @@ window.addEventListener("keydown", event => {
     }
 });
 
+function Victory() {
+    const victory = document.getElementById('victory');
+
+}
+
 
 function move(direction) {
-    
+
     const finalPositions = moves.reduce((position, move) => {
         if (move === 'forward') return { lane: position.lane + 1, column: position.column };
         if (move === 'backward') return { lane: position.lane - 1, column: position.column };
         if (move === 'left') return { lane: position.lane, column: position.column - 1 };
         if (move === 'right') return { lane: position.lane, column: position.column + 1 };
     }, { lane: currentLane, column: currentColumn })
+    if (finalPositions.lane < 0 || finalPositions.lane >= lanes.length) { return; }
+
     if (direction === 'forward' && currentLane < lanes.length - 1) {
         if (lanes[finalPositions.lane + 1].type === 'forest' && lanes[finalPositions.lane + 1].
             occupiedPositions.has(finalPositions.column)
         ) return;
+
         if (!stepStartTimestamp) startMoving = true;
-        addLane();
+
+        if (direction === 'forward') {
+            if (currentLane <= 20) {
+                addLane();
+            } else {
+                addGrassLaneForWin();
+            }
+
+        }
+
+
     } else if (direction === 'backward' && currentLane > 0) {
         if (finalPositions.lane === 0) return;
         if (lanes[finalPositions.lane - 1].type === 'forest' && lanes[finalPositions.lane - 1].
@@ -519,6 +510,13 @@ function move(direction) {
         ) return;
         if (!stepStartTimestamp) startMoving = true;
     }
+    // console.log('Current:', currentLane, currentColumn);
+    // console.log('Final:', finalPositions.lane, finalPositions.column);
+    // console.log('Last lane occupiedPositions:', lanes[lanes.length - 1].occupiedPositions);
+    // console.log('Last lane type:', lanes[lanes.length - 1].type);
+
+
+
     moves.push(direction);
 }
 
@@ -566,7 +564,6 @@ function animate(timestamp) {
             }
             case 'backward': {
                 const positionY = currentLane * positionWidth * zoom - moveDeltaDistance;
-                // positionY = currentLane * positionWidth * zoom - moveDeltaDistance;
                 camera.position.y = initialCameraPositionY + positionY;
                 dirLight.position.y = initialDirLightPositionY + positionY;
                 chicken.position.y = positionY;
@@ -600,6 +597,56 @@ function animate(timestamp) {
                 case 'forward': {
                     currentLane++;
                     counterDOM.innerHTML = currentLane;
+
+                    if (currentLane == 32) {
+                        const container = document.getElementById('effect-container');
+                        const victorySound = document.getElementById('victory-sound');
+
+                        victorySound.currentTime = 0;
+                        victorySound.play();
+
+
+                        container.innerHTML = '';
+
+                        // Hiệu ứng vòng tròn
+                        const circle = document.createElement('div');
+                        circle.classList.add('circle');
+                        container.appendChild(circle);
+
+                        // Hiệu ứng chữ Victory và ngôi sao sau 0.5s
+                        setTimeout(() => {
+                            const victory = document.createElement('div');
+                            victory.id = 'victory';
+                            victory.textContent = 'Victory';
+                            container.appendChild(victory);
+
+                            // Tạo hiệu ứng sao liên tục bên trái và phải
+                            const starInterval = setInterval(() => {
+                                for (let i = 0; i < 2; i++) {
+                                    const starLeft = document.createElement('div');
+                                    starLeft.className = 'star star-left';
+                                    starLeft.style.top = '50%';
+                                    starLeft.style.left = 'calc(50% - 120px)';
+                                    container.appendChild(starLeft);
+
+                                    const starRight = document.createElement('div');
+                                    starRight.className = 'star star-right';
+                                    starRight.style.top = '50%';
+                                    starRight.style.left = 'calc(50% + 120px)';
+                                    container.appendChild(starRight);
+
+                                    // Xoá ngôi sao sau khi hoàn thành animation
+                                    setTimeout(() => {
+                                        starLeft.remove();
+                                        starRight.remove();
+                                    }, 1000);
+                                }
+                            }, 150); // 150ms tạo 1 cặp sao
+
+                            // Ngừng hiệu ứng sau vài giây (tùy ý bạn, ở đây là 5s)
+                            setTimeout(() => clearInterval(starInterval), 5000);
+                        }, 500);
+                    }
                     break;
                 }
                 case 'backward': {
@@ -617,7 +664,6 @@ function animate(timestamp) {
                 }
             }
             moves.shift();
-            //if more steps are to be taken then restart couner atherwise stip stepping
             stepStartTimestamp = moves.length === 0 ? null : timestamp;
         }
     }
@@ -625,14 +671,41 @@ function animate(timestamp) {
     if (lanes[currentLane].type === 'car' || lanes[currentLane].type === 'truck') {
         const chickenMinX = chicken.position.x - chickenSize * zoom / 2;
         const chickenMaxX = chicken.position.x + chickenSize * zoom / 2;
-        const vechicleLength = { car: 60, truck: 105 }[lanes[currentLane].type];
+        const vehicleLength = { car: 60, truck: 105 }[lanes[currentLane].type];
         lanes[currentLane].vechicles.forEach(vechicle => {
-            const carMinX = vechicle.position.x - vechicleLength * zoom / 2;
-            const carMaxX = vechicle.position.x + vechicleLength * zoom / 2;
+            const carMinX = vechicle.position.x - vehicleLength * zoom / 2;
+            const carMaxX = vechicle.position.x + vehicleLength * zoom / 2;
             if (chickenMaxX > carMinX && chickenMinX < carMaxX) {
+                isGameOver = true;
                 endDOM.style.visibility = 'visible'
+
+                const bounceDirection = lanes[currentLane].direction ? -10 : 10;
+
+                //Bay len, roi xuong
+                gsap.to(chicken.position, {
+                    z: chicken.position.z + 10,
+                    x: chicken.position.x + bounceDirection,
+                    duration: 0.1,
+                    ease: "power2.out",
+                    onComplete: () => {
+                        gsap.to(chicken.position, {
+                            // z: 0,
+                            duration: 5,
+                            ease: "bounce.out"
+                        });
+                    }
+                });
+
+                // Xoay 1 vòng
+                gsap.to(chicken.rotation, {
+                    z: Math.PI * 2,
+                    duration: 3,
+                    ease: "power1.out"
+                });
+
             }
         });
+
     }
     renderer.render(scene, camera);
 }

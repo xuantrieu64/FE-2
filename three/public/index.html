@@ -7,6 +7,7 @@
     <title>Three.js Demo</title>
     <link rel="stylesheet" href="asset/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/three@10.9.2/build/three.module.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
 </head>
 
@@ -52,7 +53,9 @@
         <button id="retry" style="padding: 10px 20px; font-size: 18px;">Retry</button>
     </div>
 
-    <script type="module" src="js/app.js"></script>
+    <div id="effect-container"></div>
+    <audio id="victory-sound" src="js/victory.mp4" preload="auto"></audio>
+
     <script type="importmap">
         {
             "imports": {
@@ -61,6 +64,7 @@
             }
         }
     </script>
+    <script type="module" src="js/app.js"></script>
 </body>
 
 </html>
