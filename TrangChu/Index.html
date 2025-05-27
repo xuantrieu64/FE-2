@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Băng Qua Đường</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Press Start 2P', cursive, sans-serif;
+            background: linear-gradient(to bottom, #87ceeb, #f0f0f0);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding-top: 50px;
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .title {
+            font-size: 36px;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            white-space: nowrap;
+            overflow: hidden;
+            border-right: 3px solid #2c3e50;
+            width: fit-content;
+            margin: 0 auto 30px;
+            animation: blinkCursor 0.8s step-end infinite, floatDiagonal 5s ease-in-out infinite;
+            position: relative;
+        }
+
+        @keyframes blinkCursor {
+
+            0%,
+            100% {
+                border-color: transparent;
+            }
+
+            50% {
+                border-color: #2c3e50;
+            }
+        }
+
+        /* Hiệu ứng di chuyển chéo */
+        @keyframes floatDiagonal {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            25% {
+                transform: translate(5px, -5px);
+            }
+
+            50% {
+                transform: translate(0, -10px);
+            }
+
+            75% {
+                transform: translate(-5px, -5px);
+            }
+
+            100% {
+                transform: translate(0, 0);
+            }
+        }
+
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .character {
+            width: 100px;
+            animation: blink 1.5s infinite;
+            transition: transform 0.3s;
+        }
+
+        .character:hover {
+            transform: scale(1.1);
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .menu {
+            margin-top: 30px;
+        }
+
+        .menu button,
+        .bottom-menu button {
+            display: block;
+            width: 200px;
+            margin: 10px auto;
+            padding: 15px;
+            font-size: 16px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .menu button:hover,
+        .bottom-menu button:hover {
+            background-color: #1e8449;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+            transform: translateY(-3px);
+        }
+
+        .bottom-menu {
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        /* hướng dẫn sử dụng */
+        /* Modal overlay */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        /* Nội dung hộp thoại */
+        .modal-content {
+            background-color: #ffffff;
+            margin: 8% auto;
+            padding: 25px 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 460px;
+            color: #2c3e50;
+            font-family: Arial, sans-serif;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+            animation: fadeInModal 0.4s ease-in-out;
+            position: relative;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            text-align: center;
+            font-size: 22px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .modal-content h3 {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #16a085;
+        }
+
+        .modal-content p.intro {
+            text-align: center;
+            font-size: 15px;
+            margin-bottom: 20px;
+        }
+
+        .modal-content ul {
+            list-style: none;
+            padding-left: 0;
+            margin-top: 10px;
+        }
+
+        .modal-content ul li {
+            margin-bottom: 8px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .control-section,
+        .tips-section {
+            margin-top: 10px;
+        }
+
+        .close {
+            color: #888;
+            position: absolute;
+            top: 12px;
+            right: 20px;
+            font-size: 26px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        @keyframes fadeInfadeInModal {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Cài đặt */
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+
+        .setting-item label {
+            flex: 1;
+        }
+
+        .setting-item input[type="checkbox"] {
+            transform: scale(1.5);
+            cursor: pointer;
+        }
+
+        /* Mây trôi */
+        .cloud {
+            position: absolute;
+            background: url('public/img/cloud.gif') no-repeat;
+            background-size: contain;
+            width: 100px;
+            /* sẽ bị override bằng JS */
+            height: 60px;
+            opacity: 0.6;
+            z-index: 1;
+            animation-name: moveClouds;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+
+        @keyframes moveClouds {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(120vw);
+            }
+        }
+
+        /* Nhân Vật */
+        
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.176.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="title" id="gameTitle"></h1>
+        <img src="public/img/vinno_5.gif" alt="Nhân vật chính" class="character" />
+        
+
+
+        <div class="menu">
+            <button onclick="startGame()">▶️ Chơi Ngay</button>
+            <button onclick="showGuide()">📖 Hướng Dẫn</button>
+
+        </div>
+
+        <div class="bottom-menu">
+            <button onclick="openSettings()">⚙️ Cài Đặt</button>
+            <button onclick="showLeaderboard()">🏆 Bảng Xếp Hạng</button>
+        </div>
+
+
+
+    </div>
+
+
+    <!-- Nhạc nền -->
+    <audio autoplay loop id="bgm">
+        <source src="bg-music.mp3" type="audio/mpeg" />
+    </audio>
+
+    <!-- Hướng dẫn sử dụng -->
+    <div id="guideModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeGuide()">&times;</span>
+            <h2>📖 Hướng Dẫn Chơi</h2>
+            <p class="intro">Hãy giúp nhân vật <strong>băng qua đường an toàn</strong> bằng cách sử dụng các phím mũi
+                tên!</p>
+
+            <div class="control-section">
+                <h3>🎮 Điều Khiển:</h3>
+                <ul>
+                    <li>⬆️ <strong>Đi Lên</strong></li>
+                    <li>⬇️ <strong>Đi Xuống</strong></li>
+                    <li>⬅️ <strong>Rẽ Trái</strong></li>
+                    <li>➡️ <strong>Rẽ Phải</strong></li>
+                </ul>
+            </div>
+
+            <div class="tips-section">
+                <h3>⚠️ Mẹo Chơi:</h3>
+                <ul>
+                    <li>🚗 Tránh xe cộ đang di chuyển</li>
+                    <li>🕹️ Phản xạ nhanh để tránh chướng ngại vật</li>
+                    <li>🌟 Ghi điểm cao nhất để đứng đầu bảng xếp hạng!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- Modal cài đặt -->
+    <!-- Modal Cài Đặt -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSettings()">&times;</span>
+            <h2>⚙️ Cài Đặt</h2>
+
+            <div class="setting-item">
+                <label for="toggleMusic">🎵 Nhạc nền:</label>
+                <input type="checkbox" id="toggleMusic" onchange="toggleMusic()" />
+            </div>
+            <div class="setting-item">
+                <div class="setting-item"></div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        function startGame() {
+            alert("Bắt đầu trò chơi!");
+            // window.location.href = 'game.html'; // nếu có trang game chính
+        }
+
+        //Hướng dẫn sử dụng
+        function showGuide() {
+            document.getElementById("guideModal").style.display = "block";
+        }
+
+        function closeGuide() {
+            document.getElementById("guideModal").style.display = "none";
+        }
+
+
+        function openSettings() {
+            alert("Cài đặt đang được phát triển...");
+        }
+
+        function showLeaderboard() {
+            alert("Bảng xếp hạng đang được cập nhật...");
+        }
+        function typeTitle(text, elementId, speed = 150) {
+            const element = document.getElementById(elementId);
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            type();
+        }
+
+        window.onload = function () {
+            typeTitle("BĂNG QUA ĐƯỜNG", "gameTitle", 100);
+        };
+
+
+        //Cài đặt 
+        function openSettings() {
+            // Mở modal
+            document.getElementById("settingsModal").style.display = "block";
+
+            // Cập nhật trạng thái checkbox theo nhạc hiện tại
+            const bgm = document.getElementById("bgm");
+            document.getElementById("toggleMusic").checked = !bgm.paused;
+        }
+
+        function closeSettings() {
+            document.getElementById("settingsModal").style.display = "none";
+        }
+
+        function toggleMusic() {
+            const bgm = document.getElementById("bgm");
+            const isChecked = document.getElementById("toggleMusic").checked;
+
+            if (isChecked) {
+                bgm.play();
+            } else {
+                bgm.pause();
+            }
+        }
+
+        //Mây
+        function createRandomClouds(count = 3) {
+            for (let i = 0; i < count; i++) {
+                const cloud = document.createElement("div");
+                cloud.classList.add("cloud");
+
+                // Kích thước ngẫu nhiên (80px - 280px)
+                const width = Math.floor(Math.random() * 200) + 80;
+                cloud.style.width = `${width}px`;
+                cloud.style.height = `${width * 0.5}px`; // giữ tỉ lệ
+
+                // Vị trí Y ngẫu nhiên (50px đến 250px)
+                const top = Math.floor(Math.random() * 200) + 50;
+                cloud.style.top = `${top}px`;
+
+                // Thời gian chạy (60s - 120s)
+                const duration = Math.floor(Math.random() * 60) + 30;
+                cloud.style.animationDuration = `${duration}s`;
+
+                // Trễ thời gian (0s - 20s)
+                const delay = Math.floor(Math.random() * 20);
+                cloud.style.animationDelay = `${delay}s`;
+
+                // Bắt đầu ngoài màn hình trái
+                cloud.style.left = `-${width}px`;
+
+                document.body.appendChild(cloud);
+            }
+        }
+
+        window.onload = function () {
+            typeTitle("BĂNG QUA ĐƯỜNG", "gameTitle", 100);
+            createRandomClouds(4); // tạo 6 đám mây ngẫu nhiên
+        };
+
+
+
+    </script>
+
+    <!-- Nhân vật -->
+     <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+    const canvas = document.getElementById('canvas');
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#F0F0F0');
+
+    const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+    camera.position.set(0, 1.5, 3);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    directionalLight.position.set(2, 5, 5);
+    scene.add(directionalLight);
+
+    let mixer;
+    let avatar;
+
+    const loader = new GLTFLoader();
+    loader.load(
+      'https://models.readyplayer.me/682356583c5ab94b9e4bf2f4.glb',
+      function (gltf) {
+        avatar = gltf.scene;
+        avatar.scale.set(1.5, 1.5, 1.5);
+        avatar.position.set(0, -1.5, 0);
+        scene.add(avatar);
+      },
+      undefined,
+      function (error) {
+        console.error('Lỗi khi tải avatar:', error);
+      }
+    );
+
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+      if (mixer) mixer.update(delta);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+
+</html>
