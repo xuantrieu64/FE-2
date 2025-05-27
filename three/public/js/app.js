@@ -126,6 +126,56 @@ const initaliseValues = () => {
 
 initaliseValues();
 
+const resetGame = () => {
+    // Xóa lane cũ khỏi scene
+    lanes.forEach(lane => {
+        scene.remove(lane.mesh);
+        if (lane.vehicles) {
+            lane.vehicles.forEach(vehicle => scene.remove(vehicle.mesh));
+        }
+        if (lane.trees) {
+            lane.trees.forEach(tree => scene.remove(tree));
+        }
+    });
+
+    // Tạo lại lane mới
+    lanes = generateLanes();
+
+    // Thêm lane mới vào scene
+    lanes.forEach(lane => {
+        scene.add(lane.mesh);
+        if (lane.vehicles) {
+            lane.vehicles.forEach(vehicle => scene.add(vehicle.mesh));
+        }
+        if (lane.trees) {
+            lane.trees.forEach(tree => scene.add(tree));
+        }
+    });
+
+    // Reset vị trí gà
+    currentLane = 0;
+    currentColumn = Math.floor(columns / 2);
+    chicken.position.x = 0;
+    chicken.position.y = 0;
+
+    // Reset camera & ánh sáng
+    camera.position.y = initialCameraPositionY;
+    camera.position.x = initialCameraPositionX;
+    dirLight.position.x = initialDirLightPositionX;
+    dirLight.position.y = initialDirLightPositionY;
+
+    // Reset giao diện
+    counterDOM.textContent = '0';
+    container.innerHTML = '';
+
+    // Reset trạng thái điều khiển
+    previousTimestamp = null;
+    startMoving = false;
+    moves = [];
+    stepStartTimestamp = undefined;
+}
+
+
 const renderer = new THREE.WebGLRenderer({
     alpha: true,
     antialias: true
@@ -435,7 +485,7 @@ function addGrassLaneForWin() {
 }
 document.querySelector("#retry").addEventListener("click", () => {
     lanes.forEach(lane => scene.remove(lane.mesh));
-    initaliseValues();
+    resetGame();
     endDOM.style.visibility = 'hidden';
 });
 
@@ -460,10 +510,6 @@ window.addEventListener("keydown", event => {
     }
 });
 
-function Victory() {
-    const victory = document.getElementById('victory');
-
-}
 
 
 function move(direction) {
@@ -600,7 +646,7 @@ function animate(timestamp) {
                     currentLane++;
                     counterDOM.innerHTML = currentLane;
 
-                    if (currentLane >= 30) {
+                    if (currentLane == 32) {
 
 
                         victorySound.currentTime = 0;
@@ -608,6 +654,10 @@ function animate(timestamp) {
 
 
                         container.innerHTML = '';
+
+                        const blur = document.createElement('div');
+                        blur.classList.add('blur-background');
+                        container.appendChild(blur);
 
                         // Hiệu ứng vòng tròn
                         const circle = document.createElement('div');
@@ -620,6 +670,12 @@ function animate(timestamp) {
                             victory.id = 'victory';
                             victory.textContent = 'Victory';
                             container.appendChild(victory);
+
+                            // 👉 Thêm dòng hướng dẫn nhấn để tiếp tục
+                            const hint = document.createElement('div');
+                            hint.id = 'continue-hint';
+                            hint.textContent = 'Nhấn vào màn hình để tiếp tục';
+                            container.appendChild(hint);
 
                             // Tạo hiệu ứng sao liên tục bên trái và phải
                             const starInterval = setInterval(() => {
@@ -645,8 +701,17 @@ function animate(timestamp) {
                             }, 150); // 150ms tạo 1 cặp sao
 
                             // Ngừng hiệu ứng sau vài giây (tùy ý bạn, ở đây là 5s)
-                            setTimeout(() => clearInterval(starInterval), 5000);
-                        }, 500);
+                            setTimeout(() => clearInterval(starInterval), 1000);
+
+                            const removeVictoryEffect = () => {
+                                container.innerHTML = '';
+                                document.removeEventListener('click', removeVictoryEffect);
+
+                                resetGame();
+                            };
+
+                            document.addEventListener('click', removeVictoryEffect);
+                        }, 1000);
                     }
                     break;
                 }
