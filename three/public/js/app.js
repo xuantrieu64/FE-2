@@ -87,9 +87,6 @@ dirLight.shadow.camera.right = d;
 dirLight.shadow.camera.top = d;
 dirLight.shadow.camera.bottom = - d;
 
-// var helper = new THREE.CameraHelper(dirLight.shadow.camera );
-// var helper = new THREE.CameraHelper(camera);
-// scene.add(helper);
 
 let backLight = new THREE.DirectionalLight(0x000000, .4);
 backLight.position.set(200, 200, 50);
@@ -558,12 +555,6 @@ function move(direction) {
         ) return;
         if (!stepStartTimestamp) startMoving = true;
     }
-    // console.log('Current:', currentLane, currentColumn);
-    // console.log('Final:', finalPositions.lane, finalPositions.column);
-    // console.log('Last lane occupiedPositions:', lanes[lanes.length - 1].occupiedPositions);
-    // console.log('Last lane type:', lanes[lanes.length - 1].type);
-
-
 
     moves.push(direction);
 }
